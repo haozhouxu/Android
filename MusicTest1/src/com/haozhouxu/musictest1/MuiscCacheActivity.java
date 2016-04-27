@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -155,23 +156,35 @@ public class MuiscCacheActivity extends Activity implements OnClickListener {
 	private void initMusic() {
 		// TODO Auto-generated method stub
 		try {
+//			String musicUrl = "http://miao.pujisi.org/Files/music/6357991855459854559687709.mp3";
 			String musicUrl = "http://miao.pujisi.org/Files/music/6357991612487364512460931.mp3";
 			String key = hashKeyForDisk(musicUrl);
 			DiskLruCache.Snapshot snapShot = mDiskLruCache.get(key);
 			if (snapShot != null) {
 				Toast.makeText(getApplication(), "have download ,ready to play", Toast.LENGTH_LONG).show();
 				InputStream is = snapShot.getInputStream(0);
-				File temp = File.createTempFile("mediaplayertmp", "temp");
+				//创建一个临时文件，用来把流转换为文件
+				File tempFilePath = getTempDir(MuiscCacheActivity.this);
+				//1.1 判断当前目录是否存在
+				if (tempFilePath.isDirectory()&&!tempFilePath.exists()) {
+					tempFilePath.mkdirs();
+				}
+				File tempflie = getDiskCacheDir(MuiscCacheActivity.this, "musicTempFile");
+				if (tempflie.exists()) {
+					tempflie.delete();
+				}
+				File temp = new File(tempflie.getAbsolutePath());
 				FileOutputStream out = new FileOutputStream(temp);
 				// 用BufferdOutputStream速度快
 				BufferedOutputStream bis = new BufferedOutputStream(out);
-				byte buf[] = new byte[128];
+				byte buf[] = new byte[1024];
 				do {
 					int numread = is.read(buf);
 					if (numread <= 0)
 						break;
 					bis.write(buf, 0, numread);
 				} while (true);
+				Log.e("path", temp.getAbsolutePath());
 				mediaPlayer.setDataSource(temp.getAbsolutePath());
 				mediaPlayer.prepare();
 			} else {
@@ -288,5 +301,16 @@ public class MuiscCacheActivity extends Activity implements OnClickListener {
 			cachePath = context.getCacheDir().getPath();
 		}
 		return new File(cachePath + File.separator + uniqueName);
+	}
+	
+	public File getTempDir(Context context) {
+		String cachePath;
+		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+				|| !Environment.isExternalStorageRemovable()) {
+			cachePath = context.getExternalCacheDir().getPath();
+		} else {
+			cachePath = context.getCacheDir().getPath();
+		}
+		return new File(cachePath);
 	}
 }
