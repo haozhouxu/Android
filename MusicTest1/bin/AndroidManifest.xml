@@ -24,8 +24,13 @@
         <activity
             android:name=".MuiscCacheActivity"
             android:label="@string/title_activity_muisc_cache" >
+        </activity>
+        <activity
+            android:name=".SwipeRefreshActivity"
+            android:label="@string/title_activity_swipe_refresh" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
